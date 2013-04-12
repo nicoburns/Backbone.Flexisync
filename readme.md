@@ -22,7 +22,7 @@ http://github.com/nicoburns/backbone.flexisync/wiki
 
 ## Usage
 
-Include Backbone.Flexisync and config options after having included Backbone.js:
+Include Backbone.Flexisync and config options after having included Backbone.js, and then call `activate` to replace the default sync implementation:
 
 ```html
 <script type="text/javascript" src="backbone.js"></script>
@@ -34,6 +34,9 @@ Include Backbone.Flexisync and config options after having included Backbone.js:
     // If cacheTo is specified then the return data of remote requests is cached to the specified
     // data stores and can be fetched from there the next time that data is requested.
     Backbone.Flexisync.options.cacheTo = ["memory", "localstorage"];
+
+    // Enables the plugin
+    Backbone.Flexisync.activate();
 </script>;
 ```
 
