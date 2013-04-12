@@ -72,33 +72,24 @@ Create and register a 'Request Matcher'. This matches against the url you pass t
 
 ```javascript
 
-var usersMatcher = {
-    pattern: /^users\/([0-9]+)$/, // Matches flexisync://users/123
-    requiredData: ["users"], // These are the same as the datasource's returnData
+var usergroupsMatcher = {
+    pattern: /^usergroups\/([0-9]+)$/, // Matches flexisync://usergroups/123
+    requiredData: ["users", "usergroups"], // These are the same as the datasource's returnData
     parse: function (data, id) {
+    	var users, usergroup;
+    	// This function takes the usergroups stored user id's and fetches the user data
+    	// for each id, returning an object with full user data (rather than merely id's)
     	// The id comes from the brackets in the regex above
 
-        // This value is sent to the model
-        return data.users[id];
-    }
-};
-Backbone.Flexisync.RequestMatcher.register(usersMatcher);
-
-var usergroupsMatcher = {
-    pattern: /^usergroups$/, // Matches flexisync://usergroups
-    requiredData: ["users", "usergroups"], // These are the same as the datasource's returnData
-    parse: function (data) {
-    	// This function takes stored usergroup id's and fetches the user data for each id,
-    	// returning an array of user data.
-        var usergroups = [];
-        _.each(data.usergroups, function (id) {
-            if (data.users[id]) {
-                usergroups.push(data.users[id]);
-            }
+    	users = [],
+    	usergroup = data.usergroups[id];
+        _.each(usergroup.users, function (id) {
+            if (data.users[id]) users.push(data.users[id]);
         });
+        usergroup.users = users;
 
         // This value is sent to the model
-        return allproducts;
+        return usergroup;
     }
 };
 Backbone.Flexisync.RequestMatcher.register(usergroupsMatcher);
@@ -113,22 +104,10 @@ var usergroupsModel = Backbone.Model.extend({
   
   // ... everything else is normal.
 });
-
 usergroupsModel.fetch();
-usergroupsModel.fetch({from: "remote"}); // Fetch from the server for this fetch
 
-var userModel = Backbone.Model.extend({
-  fetchFrom: ["remote"], // For this model, only allow the remote datastore (always fetch from the server)
-  cacheTo: [], // And don't cache the data
-  url: function () {
-  	return "flexisync://users" + this.get("id");
-  },
-  
-  // ... everything else is normal.
-});
-
-userModel.fetch();
-usergroupsModel.fetch({cacheTo: ["localstorage"]}); // Cache this fetch to localstorage
+// For this fetch, only allow the remote datastore fetch from the server)
+usergroupsModel.fetch({from: "remote"});
 ```
 ### RequireJS
 
