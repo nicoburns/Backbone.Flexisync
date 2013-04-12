@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>Test Suite | Backbone.Flexisyn</title>
+
+    <!-- Jasmine styles -->
+    <link rel="stylesheet" href="support/jasmine.css">
+</head>
+
+<body>
+    <div id="sandbox" style:"overflow: hidden; height: 1px;"></div>
+
+    <!-- Use jQuery, Underscore and Backbone -->
+    <script src="support/jquery.js"></script>
+    <script src="support/lodash.underscore.js"></script>
+    <script src="support/backbone.js"></script>
+
+    <!-- Source files -->
+    <script src="../src/backbone.flexisync.js"></script>
+    <script src="../src/config.js"></script>
+    <script src="../src/datastores/memory.store.js"></script>
+    <script src="../src/datastores/localstorage.store.js"></script>
+    <script src="../src/datastores/remote.store.js"></script>
+
+    <!-- Backbone.Flexisync config -->
+    <script>
+        Backbone.Flexisync.options.fetchFrom = ["memory", "localstorage", "remote"];
+        Backbone.Flexisync.options.cacheTo = ["memory", "localstorage"];
+    </script>
+
+    <!-- Testing libs -->
+    <script src="support/jasmine.js"></script>
+    <script src="support/jasmine.async.js"></script>
+    <script src="support/jasmine-html.js"></script>
+    <script src="support/custom-matchers.js"></script>
+
+    <!-- Spec files -->
+    <script src="spec/sync.spec.js"></script>
+    <script src="spec/datastores/memory.spec.js"></script>
+    <script src="spec/datastores/localstorage.spec.js"></script>
+    <script src="spec/datastores/remote.spec.js"></script>
+
+    <!-- Run specs -->
+    <script>
+        var jasmineEnv = jasmine.getEnv();
+        jasmineEnv.updateInterval = 1000;
+
+        var htmlReporter = new jasmine.HtmlReporter();
+
+        jasmineEnv.addReporter(htmlReporter);
+
+        jasmineEnv.specFilter = function(spec) {
+            return htmlReporter.specFilter(spec);
+        };
+
+        jasmineEnv.execute();
+    </script>
+</body>
+</html>
