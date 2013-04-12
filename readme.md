@@ -37,7 +37,7 @@ Include Backbone.Flexisync and config options after having included Backbone.js:
 </script>;
 ```
 
-Create and add a remote 'datasources'. This tells the synclayer where it can get certain data from.
+Create and add remote 'datasources'. This tells the synclayer where it can get certain data from.
 
 ```javascript
 var usersSource = {
@@ -72,25 +72,28 @@ Create and register a 'Request Matcher'. This matches against the url you pass t
 
 ```javascript
 
+
+var parseGroupData = function (data, id) {
+	var users, usergroup;
+	// This function takes the usergroups stored user id's and fetches the user data
+	// for each id, returning an object with full user data (rather than merely id's)
+	// The id comes from the brackets in the regex above
+
+	users = [],
+	usergroup = data.usergroups[id];
+    _.each(usergroup.users, function (id) {
+        if (data.users[id]) users.push(data.users[id]);
+    });
+    usergroup.users = users;
+
+    // This value is sent to the model
+    return usergroup;
+}
+
 var usergroupsMatcher = {
     pattern: /^usergroups\/([0-9]+)$/, // Matches flexisync://usergroups/123
     requiredData: ["users", "usergroups"], // These are the same as the datasource's returnData
-    parse: function (data, id) {
-    	var users, usergroup;
-    	// This function takes the usergroups stored user id's and fetches the user data
-    	// for each id, returning an object with full user data (rather than merely id's)
-    	// The id comes from the brackets in the regex above
-
-    	users = [],
-    	usergroup = data.usergroups[id];
-        _.each(usergroup.users, function (id) {
-            if (data.users[id]) users.push(data.users[id]);
-        });
-        usergroup.users = users;
-
-        // This value is sent to the model
-        return usergroup;
-    }
+    parse: parseGroupData
 };
 Backbone.Flexisync.RequestMatcher.register(usergroupsMatcher);
 ```
@@ -100,8 +103,9 @@ Create your Models and Collections as normal, specifying a special url, and opti
 ```javascript
 
 var usergroupsModel = Backbone.Model.extend({
-  url: "flexisync://usergroups" // Url is 'flexisync://' + the RequestMatcher's pattern
-  
+  url: function () {
+  	return "flexisync://usergroups" + this.get("id"); // Url is 'flexisync://' + the RequestMatcher's pattern
+  }
   // ... everything else is normal.
 });
 usergroupsModel.fetch();
