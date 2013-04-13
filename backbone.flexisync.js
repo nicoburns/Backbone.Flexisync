@@ -88,7 +88,7 @@
             async = $.Deferred();
 
         datasource = this.getSource(name);
-        if (!datasource) return async.reject().promise();
+        if (!datasource) return async.reject(new Sync.Error(404, "No datasource for data '" + name + "'")).promise();
 
         options = options || {};
         options.xhr = options.xhr || RemoteStore.createProgressXhr(async);
@@ -130,9 +130,10 @@
             return datasource.remoterequest;
         }
         else {
+            var url = datasource.url;
             options = $.extend(options, {
                 type: "GET",
-                url: datasource.url,
+                url: _.isFunction(url) ? url.apply(datasource, options.parameters) : url,
                 dataType: "json"
             });
 
@@ -177,7 +178,10 @@
     // Registers a new datasource
     RemoteStore.addSource = function (datasource) {
         var id;
-        if (!this.validateSource(datasource)) return false;
+        if (!this.validateSource(datasource)) {
+            if(Sync.debug) console.log("Flexisync: datasource invalid.", datasource);
+            return false;
+        }
 
         this.datasourcecount++;
         id = this.datasourcecount;
@@ -195,7 +199,7 @@
 
     // Checks that 'datasource' is probably a valid datasource object
     RemoteStore.validateSource = function (datasource) {
-        return (datasource && _.isString(datasource.url) && _.isArray(datasource.returnData) &&
+        return (datasource && (_.isString(datasource.url) || _.isFunction(datasource.url)) && _.isArray(datasource.returnData) &&
                     datasource.returnData.length > 0 && _.isFunction(datasource.parse)) ? true : false;
     };
 
@@ -293,6 +297,7 @@ Sync.Request = function (matcher, model, options) {
 
     // Get parameters from the request url
     this.params = Sync.RequestMatcher.getUrlParameters(options.url, matcher);
+    this.options.parameters = _.isFunction(matcher.parameters) ? matcher.parameters.apply(matcher, this.params) : {};
     this.timing.matched = +new Date();
 
     return this;
@@ -389,7 +394,7 @@ Sync.Data = function (key, options) {
     _.extend(this, new $.Deferred());
 
     this.key = key;
-    this.options = _.extend(_.clone(options), {success: undefined, error: undefined});
+    this.options = _.extend(_.clone(options), {success: undefined, error: undefined, parameters: options.parameters[key] || []});
     return this;
 };
 

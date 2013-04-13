@@ -85,6 +85,7 @@ Sync.Request = function (matcher, model, options) {
 
     // Get parameters from the request url
     this.params = Sync.RequestMatcher.getUrlParameters(options.url, matcher);
+    this.options.parameters = _.isFunction(matcher.parameters) ? matcher.parameters.apply(matcher, this.params) : {};
     this.timing.matched = +new Date();
 
     return this;
@@ -181,7 +182,7 @@ Sync.Data = function (key, options) {
     _.extend(this, new $.Deferred());
 
     this.key = key;
-    this.options = _.extend(_.clone(options), {success: undefined, error: undefined});
+    this.options = _.extend(_.clone(options), {success: undefined, error: undefined, parameters: options.parameters[key] || []});
     return this;
 };
 

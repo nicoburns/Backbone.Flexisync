@@ -14,7 +14,7 @@ var RemoteStore = (function ($) {
             async = $.Deferred();
 
         datasource = this.getSource(name);
-        if (!datasource) return async.reject().promise();
+        if (!datasource) return async.reject(new Sync.Error(404, "No datasource for data '" + name + "'")).promise();
 
         options = options || {};
         options.xhr = options.xhr || RemoteStore.createProgressXhr(async);
@@ -56,9 +56,10 @@ var RemoteStore = (function ($) {
             return datasource.remoterequest;
         }
         else {
+            var url = datasource.url;
             options = $.extend(options, {
                 type: "GET",
-                url: datasource.url,
+                url: _.isFunction(url) ? url.apply(datasource, options.parameters) : url,
                 dataType: "json"
             });
 
@@ -103,7 +104,10 @@ var RemoteStore = (function ($) {
     // Registers a new datasource
     RemoteStore.addSource = function (datasource) {
         var id;
-        if (!this.validateSource(datasource)) return false;
+        if (!this.validateSource(datasource)) {
+            if(Sync.debug) console.log("Flexisync: datasource invalid.", datasource);
+            return false;
+        }
 
         this.datasourcecount++;
         id = this.datasourcecount;
@@ -121,7 +125,7 @@ var RemoteStore = (function ($) {
 
     // Checks that 'datasource' is probably a valid datasource object
     RemoteStore.validateSource = function (datasource) {
-        return (datasource && _.isString(datasource.url) && _.isArray(datasource.returnData) &&
+        return (datasource && (_.isString(datasource.url) || _.isFunction(datasource.url)) && _.isArray(datasource.returnData) &&
                     datasource.returnData.length > 0 && _.isFunction(datasource.parse)) ? true : false;
     };
 

@@ -1,6 +1,6 @@
 {
     "name": "backbone.flexisync",
-    "version": "0.1.0",
+    "version": "0.2.0-pre",
     "devDependencies": {
         "grunt": "~0.4",
         "grunt-contrib-jshint": "latest",
